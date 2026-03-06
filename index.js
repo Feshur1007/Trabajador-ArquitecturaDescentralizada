@@ -4,7 +4,6 @@ const crypto = require("crypto")
 
 const app = express()
 
-// --- TUS LÍNEAS ORIGINALES (INTACTAS) ---
 const PORT = process.argv[2] || 4000
 const COORDINATOR_URL = process.argv[3]
 const PUBLIC_URL = process.argv[4]
@@ -37,7 +36,7 @@ async function discoverBackups() {
     
     try {
         const response = await fetch(`${getActiveUrl()}/status`, {
-            signal: AbortSignal.timeout(3000)
+            signal: AbortSignal.timeout(4000)
         });
         
         if (!response.ok) return;
@@ -54,7 +53,7 @@ async function discoverBackups() {
             if (url && typeof url === 'string' && url.startsWith('http') && !coordinators.includes(url)) {
                 coordinators.push(url);
                 newFound = true;
-                console.log(`🔍 ¡Nuevo backup descubierto en la red!: ${url}`);
+                console.log(`¡Nuevo backup descubierto en la red!: ${url}`);
             }
         });
 
@@ -77,7 +76,7 @@ async function register() {
 
         if (!response.ok) throw new Error("Registro rechazado")
 
-        console.log(`✅ Conectado a: ${getActiveUrl()}`)
+        console.log(`Conectado a: ${getActiveUrl()}`)
         status = "Conectado"
         retryDelay = 1000 
         
@@ -105,7 +104,7 @@ async function sendPulse() {
         discoverBackups();
 
     } catch (error) {
-        console.log(`⚠️ Pulso fallido en ${getActiveUrl()}`)
+        console.log(`Pulso fallido en ${getActiveUrl()}`)
         handleError(error.message)
     }
 }
@@ -115,13 +114,13 @@ function handleError(msg) {
     
     if (currentIdx === coordinators.length - 1) {
         retryDelay = Math.min(retryDelay * 2, MAX_RETRY_DELAY)
-        console.log(`🚫 Todos los nodos caídos. Reintentando en ${retryDelay / 1000}s...`)
+        console.log(`Todos los nodos caídos. Reintentando en ${retryDelay / 1000}s...`)
     }
 
     currentIdx = (currentIdx + 1) % coordinators.length
     
     if (coordinators.length > 1) {
-        console.log(`🔄 Cambiando al backup descubierto: ${getActiveUrl()}`)
+        console.log(`Cambiando al backup descubierto: ${getActiveUrl()}`)
     }
     
     setTimeout(register, retryDelay)
@@ -206,7 +205,7 @@ app.get("/", (req, res) => {
 })
 
 app.listen(PORT, async () => {
-    console.log(`🚀 Worker iniciado en puerto ${PORT}`)
+    console.log(`Worker iniciado en puerto ${PORT}`)
     await register()
     setInterval(sendPulse, PULSE_INTERVAL)
 })
